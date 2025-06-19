@@ -76,7 +76,7 @@ const userSchema = new Schema<IUser, Model<IUser>, UserInstanceMethods>({
 
 userSchema.method("hashPassword", async function (plainPassword: string) {
     const password = await bcrypt.hash(plainPassword, 10)
-    this.password = password
+    return password
 })
 
-export const User = model<IUser>('User', userSchema);
+export const User = model('User', userSchema);
