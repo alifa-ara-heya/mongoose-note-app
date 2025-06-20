@@ -30,16 +30,23 @@ usersRoutes.post('/create-user', async (req: Request, res: Response) => {
 
         // const user = await User.create(body)
 
+        // built in and custom instance methods
+        /* 
+                const user = new User(body)
+        
+                const password = await user.hashPassword(body.password)
+        
+                user.password = password
+                console.log(password);
+        
+        
+                await user.save() */
 
-        const user = new User(body)
-
-        const password = await user.hashPassword(body.password)
-
-        user.password = password
-        console.log(password);
-
-
-        await user.save()
+        // built in and custom static methods
+        /*  const password = await User.hashPassword(body.password)
+         console.log(password, 'static');
+         body.password = password */
+        const user = await User.create(body)
 
         res.status(201).json({
             success: true,
@@ -60,11 +67,33 @@ usersRoutes.post('/create-user', async (req: Request, res: Response) => {
 // getting all users
 
 usersRoutes.get('/', async (req: Request, res: Response) => {
-    const users = await User.find()
+    // const users = await User.find()
+    const userEmail = req.query.email ? req.query.email : ''
+
+    let users = []
+
+    // filtering
+    if (userEmail) {
+        users = await User.find({ email: userEmail })
+    } else {
+        users = await User.find()
+    }
+
+
+    // sorting
+    // finding users sort by their emails
+    // users = await User.find().sort({ "email": "asc" })
+    // users = await User.find().sort({ "email": "desc" }) or { "email": -1 }
+
+    // skipping
+    users = await User.find().skip(10)
+
+    // limiting
+    users = await User.find().limit(2)
 
     res.status(201).json({
         success: true,
-        message: 'User created successfully',
+        message: 'All Users',
         users: users
     })
 })
@@ -104,7 +133,9 @@ usersRoutes.patch('/:userId', async (req: Request, res: Response) => {
 usersRoutes.delete('/:userId', async (req: Request, res: Response) => {
     const idOfUser = req.params.userId;
 
-    const user = await User.findByIdAndDelete(idOfUser)
+    // const user = await User.findByIdAndDelete(idOfUser)
+
+    const user = await User.findOneAndDelete({ _id: idOfUser })
 
 
     res.status(201).json({

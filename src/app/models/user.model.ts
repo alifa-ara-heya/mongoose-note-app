@@ -1,7 +1,8 @@
 import { Model, Schema, model } from "mongoose";
-import { IAddress, IUser, UserInstanceMethods } from "../interfaces/user.interface";
+import { IAddress, IUser, UserInstanceMethods, UserStaticMethods } from "../interfaces/user.interface";
 import validator from 'validator';
 import bcrypt from "bcryptjs";
+import { Note } from "./notes.model";
 
 
 const addressSchema = new Schema<IAddress>(
@@ -11,10 +12,9 @@ const addressSchema = new Schema<IAddress>(
         zip: { type: Number }
     }, {
     _id: false
-}
-)
+})
 
-const userSchema = new Schema<IUser, Model<IUser>, UserInstanceMethods>({
+const userSchema = new Schema<IUser, UserStaticMethods, UserInstanceMethods>({
     firstName: {
         type: String,
         required: [true, 'first name must be given'],
@@ -71,12 +71,54 @@ const userSchema = new Schema<IUser, Model<IUser>, UserInstanceMethods>({
     }
 }, {
     versionKey: false,
-    timestamps: true
+    timestamps: true,
+    // to create a virtual
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 })
 
 userSchema.method("hashPassword", async function (plainPassword: string) {
     const password = await bcrypt.hash(plainPassword, 10)
     return password
 })
+userSchema.static("hashPassword", async function (plainPassword: string) {
+    const password = await bcrypt.hash(plainPassword, 10)
+    return password
+})
 
-export const User = model('User', userSchema);
+// pre hooks - document middleware
+userSchema.pre('save', async function (next) {
+    // console.log('inside pre hook');
+    // console.log(this);
+    this.password = await bcrypt.hash(this.password, 10)
+    next()
+})
+
+// query middleware
+userSchema.pre('find', function (next) {
+    console.log('inside pre find')
+    next()
+})
+
+// post middleware - document middleware
+userSchema.post("save", function (doc, next) {
+    console.log('%s has been saved', doc._id);
+    next()
+})
+
+// query middleware
+// deleting user's note after the user has been deleted
+userSchema.post("findOneAndDelete", async function (doc, next) {
+    if (doc) {
+        // console.log(doc);
+        await Note.deleteMany({ user: doc._id })
+    }
+    next()
+})
+
+userSchema.virtual('fullName').get(function () {
+    return `${this.firstName} ${this.lastName}`
+})
+
+export const User = model<IUser, UserStaticMethods>('User', userSchema);
+

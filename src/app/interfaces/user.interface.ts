@@ -1,3 +1,5 @@
+import { Model } from "mongoose"
+
 export interface IAddress {
     city: string,
     street: string,
@@ -17,3 +19,8 @@ export interface IUser {
 export interface UserInstanceMethods {
     hashPassword(password: string): Promise<string>
 }
+
+export interface UserStaticMethods extends Model<IUser> {
+    hashPassword(password: string): Promise<string>
+}
+
