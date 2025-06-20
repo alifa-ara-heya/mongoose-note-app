@@ -49,7 +49,8 @@ const userSchema = new Schema<IUser, UserStaticMethods, UserInstanceMethods>({
                }
            } */
         // validator package
-        validate: [validator.isEmail, "Invalid email {VALUE}"]
+        validate: [validator.isEmail,
+            "Invalid email {VALUE}"]
         //we don't need to call the function validator.isEmail, Mongoose will do it
 
     },
