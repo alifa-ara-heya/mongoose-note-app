@@ -131,7 +131,7 @@ const port = 5000;
 
 async function main() {
   try {
-    await mongoose.connect("mongodb+srv://<db_username>:<db_password>@cluster.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
+    await mongoose.connect("mongodb+srv://<db_username>:<db_password>@cluster.mongodb.net/todoDB?retryWrites=true&w=majority&appName=Cluster0");
     console.log('✅ Connected to MongoDB using Mongoose');
 
     server = app.listen(port, () => {
